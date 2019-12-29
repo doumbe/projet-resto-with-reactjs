@@ -1,7 +1,50 @@
 import React, { Component } from 'react';
 import '../css/App.css';
 
+import { databaseRef as Ref } from '../firebase';
+import axios from 'axios';
+
 class App extends Component {
+
+
+    getDataWithInterval(page_number, nb_per_page) {
+        const data = Ref.child("resto")
+        axios.get(data.toString()+'.json').then((res) => {
+            // console.log(`[GET Resto] : ${JSON.stringify(res.data)}`);
+
+            var keys = Object.keys(res.data).sort();
+            var pageLength = 2;
+            var pageCount = keys.length / pageLength;
+            var currentPage = 1;
+            var promises = [];
+            var nextKey;
+            var query;
+
+            for (var i = 0; i < pageCount; i++) {
+                const key = keys[i * pageLength];
+                query = data.orderByKey().limitToFirst(pageLength).startAt(key);
+                promises.push(query.once('value'));
+                
+            }
+
+            Promise.all(promises)
+                .then((snaps) => {
+                    var pages = [];
+                    snaps.forEach((snap) => {
+                        pages.push(snap.val());
+                    })
+                    console.log('pages', pages);
+                })
+                process.exit();
+            // console.log(`[GET Resto] : ${keys}`);
+        })
+        
+    }
+
+    componentDidMount() {
+        this.getDataWithInterval(1, 2)
+    }
+
     render() {
         return (
             <div className="container">
