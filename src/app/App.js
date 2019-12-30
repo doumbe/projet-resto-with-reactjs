@@ -12,9 +12,35 @@ class App extends Component {
 
         this.state = {
             nbResto: 0,
-            nbRestoByPage: 0,
-            listResto: []
+            nbRestoByPage: 5,
+            page_num: 0,
+            listResto: [],
+            can_create: false,
+            can_update: false,
         }
+
+        this.onClickCreateResto = this.onClickCreateResto.bind(this);
+        this.handleChangeSelect = this.handleChangeSelect.bind(this);
+    }
+
+    handleChangeSelect(event) {
+        const value = Number(event.target.value)
+        this.setState({ nbRestoByPage: value })
+        this.getDataWithInterval(this.state.page_num, value);
+    }
+
+    onClickCreateResto() {
+        this.setState({
+            can_create: !this.state.can_create,
+            can_update: false
+        })
+    }
+
+    onClickUpdateResto(resto) {
+        this.setState({
+            can_update: true,
+            can_create: false
+        })
     }
 
     createResto() {}
@@ -47,13 +73,13 @@ class App extends Component {
     }
 
     componentDidMount() {
-        this.getDataWithInterval(0, 5);
+        this.getDataWithInterval(this.state.page_num, this.state.nbRestoByPage);
         this.getNbData();
     }
 
     render() {
 
-        const { listResto, nbResto, nbRestoByPage } = this.state;
+        const { listResto, can_create, can_update, nbResto, nbRestoByPage } = this.state;
 
         const nbPage = Math.ceil(nbResto / nbRestoByPage);
 
@@ -63,6 +89,7 @@ class App extends Component {
                 id={elt.id}
                 name={elt.name}
                 cuisine={elt.cuisine}
+                updateResto={this.onClickUpdateResto.bind(this, elt)}
             />;
         })
 
@@ -70,16 +97,23 @@ class App extends Component {
             <div className="container">
                 <br/>
                 <h2>Table des restaurants</h2>
-                <button type="button" className="btn btn-dark mb-3"><i className="fa fa-plus"></i></button>
+                <button
+                    type="button"
+                    className="btn btn-dark mb-3"
+                    onClick={this.onClickCreateResto}><i className="fa fa-plus"></i></button>
 
 
                 <div className="row">
-                    <div className={"col-lg"}>
+                    <div className={can_create || can_update ? "col-sm-8" : "col-sm"}>
                         <div className="input-group mb-3">
                             <div className="input-group-prepend">
                                 <label className="input-group-text" htmlFor="elementPageDropDown">Elements par page</label>
                             </div>
-                            <select className="custom-select" id="elementPageDropDown">
+                            <select
+                                className="custom-select"
+                                id="elementPageDropDown"
+                                value={this.state.nbRestoByPage}
+                                onChange={this.handleChangeSelect}>
                                 <option value="5">5</option>
                                 <option value="10">10</option>
                                 <option value="15">15</option>
@@ -117,45 +151,44 @@ class App extends Component {
                             </div>
                         </div>
 
-                        {/* Formulaire de modification */}
-                        <div className={"col-lg-4"} id="formulaireInsertion">
-                            <div className="card">
-                                <div className="card-body">
-                                    <form id="formulaireModificationform">
-                                        <div className="form-group">
-                                            <label htmlFor="idInput">Id :</label>
-                                            <input className="form-control" id="idInput" type="text" name="_id" placeholder="Id du restaurant à modifier" readOnly={true}/>
-                                        </div>
-                                        <div className="form-group">
-                                            <label htmlFor="restaurantInput">Nom</label>
-                                            <input className="form-control" id="restaurantInput" type="text" name="nom" placeholder="Michel's restaurant"/>
-                                        </div>
-                                        <div className="form-group">
-                                            <label htmlFor="cuisineInput">Cuisine</label>
-                                            <input className="form-control" id="cuisineInput" type="text" name="cuisine" placeholder="Michel's cuisine"/>
-                                        </div>
-                                        <button className="btn btn-dark">Modifier ce restaurant</button>
-                                  </form>
-                                </div>
+                    </div>
+                    {/* Formulaire d'ajout */}
+                    <div className={can_create ? "col-sm-4" : "d-none"} id="formulaireInsertion">
+                        <div className="card">
+                            <div className="card-body">
+                                <form id="formulaireInsertionform">
+                                    <div className="form-group">
+                                        <label htmlFor="restaurantInput">Nom</label>
+                                        <input className="form-control" id="restaurantInputI" type="text" required placeholder="Michel's restaurant"/>
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="cuisineInput">Cuisine</label>
+                                        <input className="form-control" id="cuisineInputI" type="text" required placeholder="Michel's cuisine"/>
+                                    </div>
+                                    <button className="btn btn-dark" type="submit">Créer restaurant</button>
+                                </form>
                             </div>
                         </div>
-
-                        {/* Formulaire d'ajout */}
-                        <div className={"col-lg-4"} id="formulaireInsertion">
-                            <div className="card">
-                                <div className="card-body">
-                                    <form id="formulaireInsertionform">
-                                        <div className="form-group">
-                                            <label htmlFor="restaurantInput">Nom</label>
-                                            <input className="form-control" id="restaurantInputI" type="text" required placeholder="Michel's restaurant"/>
-                                        </div>
-                                        <div className="form-group">
-                                            <label htmlFor="cuisineInput">Cuisine</label>
-                                            <input className="form-control" id="cuisineInputI" type="text" required placeholder="Michel's cuisine"/>
-                                        </div>
-                                        <button className="btn btn-dark" type="submit">Créer restaurant</button>
-                                    </form>
-                                </div>
+                    </div>
+                    {/* Formulaire de modification */}
+                    <div className={can_update ? "col-sm-4" : "d-none"} id="formulaireInsertion">
+                        <div className="card">
+                            <div className="card-body">
+                                <form id="formulaireModificationform">
+                                    <div className="form-group">
+                                        <label htmlFor="idInput">Id :</label>
+                                        <input className="form-control" id="idInput" type="text" name="_id" placeholder="Id du restaurant à modifier" readOnly={true}/>
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="restaurantInput">Nom</label>
+                                        <input className="form-control" id="restaurantInput" type="text" name="nom" placeholder="Michel's restaurant"/>
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="cuisineInput">Cuisine</label>
+                                        <input className="form-control" id="cuisineInput" type="text" name="cuisine" placeholder="Michel's cuisine"/>
+                                    </div>
+                                    <button className="btn btn-dark">Modifier ce restaurant</button>
+                              </form>
                             </div>
                         </div>
                     </div>

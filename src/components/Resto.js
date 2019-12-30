@@ -8,10 +8,18 @@ function Resto(props) {
             <td>
                 <div className="btn-toolbar">
                     <div className="btn-group mr-2">
-                        <button className="btn btn-dark"><i className="fa fa-edit"></i></button>
+                        <button
+                            className="btn btn-dark"
+                            onClick={() => props.updateResto(props.id, props.name, props.cuisine)}>
+                                <i className="fa fa-edit"></i>
+                        </button>
                     </div>
                     <div className="btn-group mr-2">
-                        <button className="btn btn-dark"><i className="fa fa-trash"></i></button>
+                        <button
+                            className="btn btn-dark"
+                            // onClick={() => props.removeResto(props.id)}>
+                                ><i className="fa fa-trash"></i>
+                        </button>
                     </div>
                 </div>
             </td>
