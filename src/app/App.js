@@ -6,46 +6,73 @@ import axios from 'axios';
 
 class App extends Component {
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            nbResto: 0,
+            nbRestoByPage: 0,
+            listResto: []
+        }
+    }
+
+    createResto() {}
+
+    updateResto() {}
+
+    deleteResto() {}
 
     getDataWithInterval(page_number, nb_per_page) {
-        const data = Ref.child("resto")
-        axios.get(data.toString()+'.json').then((res) => {
-            // console.log(`[GET Resto] : ${JSON.stringify(res.data)}`);
-
-            var keys = Object.keys(res.data).sort();
-            var pageLength = 2;
-            var pageCount = keys.length / pageLength;
-            var currentPage = 1;
-            var promises = [];
-            var nextKey;
-            var query;
-
-            for (var i = 0; i < pageCount; i++) {
-                const key = keys[i * pageLength];
-                query = data.orderByKey().limitToFirst(pageLength).startAt(key);
-                promises.push(query.once('value'));
-                
-            }
-
-            Promise.all(promises)
-                .then((snaps) => {
-                    var pages = [];
-                    snaps.forEach((snap) => {
-                        pages.push(snap.val());
-                    })
-                    console.log('pages', pages);
-                })
-                process.exit();
-            // console.log(`[GET Resto] : ${keys}`);
+        // const data = Ref.child("resto")
+        const data = Ref
+        data.orderByKey().startAt(page_number.toString()).limitToFirst(nb_per_page).on("value", (snapshot) => {
+            let _restos = [];
+            snapshot.forEach(resto => {
+                // console.log(resto.key);
+                // console.log(resto.val().address);
+                _restos.push({"id": resto.val().restaurant_id, "name": resto.val().name, "cuisine": resto.val().cuisine})
+            });
+            // console.log(_restos);
+            // console.log(snapshot.key);
+            // console.log(snapshot.val());
+            this.setState({
+                listResto: _restos,
+                nbRestoByPage: _restos.length
+            })
         })
-        
+        // data.orderByKey().on("value", (snapshot) => {
+        //     console.log(snapshot.val().length);
+        // })
+        // data.orderByKey().startAt("1").limitToFirst(10).on("value", (snapshot) => {
+        //     console.log(snapshot.key);
+        //     console.log(snapshot.val());
+        // })
+        // data.orderByKey().limitToFirst(11).on("value", (snapshot) => {
+        //     console.log(snapshot.key);
+        //     console.log(snapshot.val());
+        // })
+    }
+
+    getNbData() {
+        axios.get(Ref.toString()+'.json').then((res) => {
+            var keys = Object.keys(res.data).sort();
+            // var pageLength = 2;
+            // var pageCount = keys.length / pageLength;
+            this.setState({
+                nbResto: keys.length
+            })
+        })
     }
 
     componentDidMount() {
-        this.getDataWithInterval(1, 2)
+        this.getDataWithInterval(10, 20);
+        this.getNbData();
     }
 
     render() {
+
+        const { nbResto, nbRestoByPage } = this.state;
+
         return (
             <div className="container">
                 <br/>
@@ -71,7 +98,7 @@ class App extends Component {
                                 placeholder="Chercher par nom"
                                 type="text"/>
                         </div>
-                        Nombre de Resto : xxx | xxx
+                        Nombre de Resto : {nbRestoByPage} | { nbResto !== 0 ? (nbResto) : ("...")}
                         <table className="table table-bordered">
                             <thead className="thead-dark">
                                 <tr>
@@ -80,7 +107,7 @@ class App extends Component {
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody>list des resto</tbody>
+                            {/* <tbody>list des resto</tbody> */}
                         </table>
                         <br/>
 
@@ -92,7 +119,7 @@ class App extends Component {
                                     <button type="button" className="btn btn-dark" id="secondButton">2</button>
                                     <button type="button" className="btn btn-dark" id="thirdButton">3</button>
                                     <button className="btn btn-light">...</button>
-                                    <button type="button" className="btn btn-dark" id="lastPageButton">1</button>
+                                    <button type="button" className="btn btn-dark" id="lastPageButton">{ nbResto !== 0 ? (nbResto) : ("...")}</button>
                                 </div>
                             </div>
                         </div>

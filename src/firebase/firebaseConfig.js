@@ -1,4 +1,5 @@
-import * as firebase from 'firebase';
+import firebase from 'firebase/app';
+import 'firebase/database'; // If using Firebase database
 
 const config = {
     apiKey: process.env.REACT_APP_API_KEY,
@@ -10,7 +11,5 @@ const config = {
 }
 
 firebase.initializeApp(config);
-// const _auth = firebase.auth();
-const databaseAuth = firebase.auth();
-const databaseRef = firebase.database().ref();
-export { databaseAuth, databaseRef };
+const databaseRef = firebase.database().ref("resto");
+export { databaseRef };
